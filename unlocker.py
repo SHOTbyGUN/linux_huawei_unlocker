@@ -72,19 +72,24 @@ def identifyPort():
 	print "Trying to find which port is the active modem connection."
 	print "Please be patient as this can take a while.\n\n"
 	for p in glob.glob('/dev/ttyUSB*'):
-		print "Testing port " + p
-		ser = serial.Serial(port = p,
-				timeout = 15)
-		ser.write('AT\r\n')
-		activity = ser.read(5)
-		if activity == '':
-			print "\tNo activity\n"
+		try:
+			print "Testing port " + p
+			ser = serial.Serial(port = p,
+					timeout = 15)
+			ser.write('AT\r\n')
+			activity = ser.read(5)
+			if activity == '':
+				print "\tNo activity\n"
+				ser.close()
+				continue
+		except:
+			print "\tError, This may be because you need to run this program as root.\n"
 			ser.close()
 			continue
-		
-		print "\tActivity detected\n"
-		ser.close()
-		return p
+		else:
+			print "\tActivity detected\n"
+			ser.close()
+			return p
 	return ''
 
 # The modem should respond with the IMEI with the AT+CGSN command
@@ -191,7 +196,6 @@ def main():
 		activePort = identifyPort()
 	except:
 		print "\nAn error occurred when probing for active ports."
-		print "This may be because you need to run this program as root."
 		exit(1)
 	else:
 		if (activePort==''):
